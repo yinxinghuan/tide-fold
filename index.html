@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta name="game-uuid" content="cb46d67d-0529-44c5-bb26-4860f3bb7757" />
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+    <meta name="theme-color" content="#07141f" />
+    <title>Tide Fold</title>
+    <script>
+      document.documentElement.classList.toggle('baseline', new URLSearchParams(location.search).get('baseline') === '1');
+    </script>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <section class="baseline-ui" aria-label="Original WebGPU Ocean controls">
+      <div id="ui-container">
+        <label><input type="checkbox" id="particle" /> Particles</label>
+        <div><label for="slider">Box width:</label> <input type="range" id="slider" min="0" max="100" value="100" /></div>
+      </div>
+      <div id="number-container">
+        <b>Simulation Mode</b>
+        <form id="simulation-mode">
+          <label><input type="radio" name="options" value="mlsmpm" checked />MLS-MPM</label>
+          <label><input type="radio" name="options" value="sph" />SPH</label>
+        </form>
+        <b>Number of Particles</b>
+        <form id="number-button">
+          <label><input type="radio" name="options" value="0" /> Small (<span id="small-value"></span> particles)</label>
+          <label><input type="radio" name="options" value="1" checked /> Medium (<span id="medium-value"></span> particles)</label>
+          <label><input type="radio" name="options" value="2" /> Large (<span id="large-value"></span> particles)</label>
+          <label><input type="radio" name="options" value="3" /> Very Large (<span id="very-large-value"></span> particles)</label>
+        </form>
+      </div>
+      <div id="howto-container"><b>Drag</b> to move camera<br /><b>Scroll</b> to zoom in and out</div>
+      <a id="github-link" href="https://github.com/matsuoka-601/webgpu-ocean" target="_blank" rel="noopener noreferrer" aria-label="Source code">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .7a11.3 11.3 0 0 0-3.57 22c.57.1.77-.25.77-.55v-2.17c-3.15.68-3.81-1.34-3.81-1.34-.52-1.31-1.26-1.66-1.26-1.66-1.03-.7.08-.69.08-.69 1.14.08 1.74 1.17 1.74 1.17 1.01 1.74 2.66 1.24 3.31.95.1-.73.4-1.24.72-1.52-2.51-.29-5.15-1.26-5.15-5.59 0-1.24.44-2.25 1.17-3.04-.12-.29-.51-1.44.11-3 0 0 .95-.31 3.11 1.16a10.7 10.7 0 0 1 5.66 0C17.05 4.91 18 5.22 18 5.22c.62 1.56.23 2.71.11 3 .73.79 1.17 1.8 1.17 3.04 0 4.34-2.65 5.3-5.17 5.58.41.35.77 1.04.77 2.1v3.21c0 .3.2.66.78.55A11.3 11.3 0 0 0 12 .7Z" /></svg>
+      </a>
+    </section>
+
+    <main class="tf-ui" aria-label="Tide Fold">
+      <header class="tf-title"><strong>TIDE FOLD</strong><span>STUDY 09 / MLS-MPM</span></header>
+      <div class="tf-boundary tf-boundary--left" aria-hidden="true"></div>
+      <div class="tf-boundary tf-boundary--right" aria-hidden="true"></div>
+      <div class="tf-guide" data-tf-guide aria-hidden="true">
+        <span class="tf-guide__path"></span>
+        <svg viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74l-3.43-.72c-.08-.01-.15-.03-.24-.03-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.92-1.38Z" /></svg>
+      </div>
+      <p class="tf-hint" data-tf-hint>FOLD THE TIDE</p>
+      <div class="tf-loading" data-tf-loading><span></span><p>SUMMONING 70,000 DROPS</p></div>
+      <section class="tf-error" data-tf-error hidden>
+        <p data-tf-error-copy>WEBGPU IS UNAVAILABLE</p>
+        <button type="button" data-tf-retry>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35Z" /></svg>
+          <span>TRY AGAIN</span>
+        </button>
+      </section>
+    </main>
+    <span id="error-reason" hidden></span>
+    <canvas id="fluidCanvas"></canvas>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

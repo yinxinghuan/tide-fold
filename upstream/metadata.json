@@ -1,0 +1,10 @@
+{
+  "title": "WebGPU-Ocean",
+  "author": "matsuoka-601",
+  "repository": "https://github.com/matsuoka-601/WebGPU-Ocean",
+  "demo": "https://webgpu-ocean.netlify.app/",
+  "commit": "3bd932778650b5e756ba2590969ed618313843ad",
+  "license": "MIT",
+  "baseline_query": "?baseline=1",
+  "product_adaptation": "The original Box width parameter is controlled by a full-canvas horizontal fold gesture. Rendering, MLS-MPM compute, assets and default camera remain source-derived."
+}
