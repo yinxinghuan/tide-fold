@@ -1,8 +1,8 @@
 type TideState = 'loading' | 'guide' | 'idle' | 'folding' | 'ready' | 'release' | 'recovery'
 
 const copy = {
-  en: { idle: 'FOLD THE TIDE', folding: 'KEEP FOLDING', ready: 'RELEASE THE SURGE', release: 'TIDE UNBOUND', recovery: 'LET IT SETTLE', unavailable: 'WEBGPU IS UNAVAILABLE', lost: 'THE OCEAN LOST ITS GPU' },
-  zh: { idle: '折叠海潮', folding: '继续向内折', ready: '松手释放', release: '海潮解封', recovery: '等待回落', unavailable: '此设备暂不支持 WEBGPU', lost: 'GPU 连接已中断' },
+  en: { gesture: 'PINCH THE TIDE', unavailable: 'WEBGPU IS UNAVAILABLE', lost: 'THE OCEAN LOST ITS GPU' },
+  zh: { gesture: '双指捏合海潮', unavailable: '此设备暂不支持 WEBGPU', lost: 'GPU 连接已中断' },
 }
 
 function locale(): keyof typeof copy {
@@ -84,6 +84,10 @@ export class TideFoldExperience {
   releaseAt = 0
   releaseFold = 0
   readySoundPlayed = false
+  touchPoints = new Map<number, { x: number, y: number }>()
+  effectTouchIds = new Set<number>()
+  startDistance = 0
+  previousDistance = 0
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -96,8 +100,7 @@ export class TideFoldExperience {
 
   setState(state: TideState) {
     this.state = state; this.ui.dataset.state = state
-    const key = state === 'ready' ? 'ready' : state === 'release' ? 'release' : state === 'recovery' ? 'recovery' : state === 'folding' ? 'folding' : 'idle'
-    this.hint.textContent = copy[this.lang][key]
+    this.hint.textContent = copy[this.lang].gesture
   }
 
   setFold(value: number) {
@@ -110,7 +113,8 @@ export class TideFoldExperience {
     if (this.firstFrameAt) return
     this.firstFrameAt = time
     this.loading.classList.add('is-hidden')
-    this.setState('guide')
+    this.realInput = true
+    this.setState('idle')
   }
 
   update(time: number) {
@@ -150,27 +154,41 @@ export class TideFoldExperience {
   }
 
   onDown = (event: PointerEvent) => {
-    if (!event.isPrimary || this.pointerId !== null) return
-    event.preventDefault(); this.cancelDemo(); this.pointerId = event.pointerId
-    this.canvas.setPointerCapture(event.pointerId)
-    this.startX = this.prevX = event.clientX; this.prevTime = performance.now(); this.releaseAt = 0; this.readySoundPlayed = false
+    if (event.pointerType !== 'touch') return
+    this.touchPoints.set(event.pointerId, { x: event.clientX, y: event.clientY })
+    if (this.touchPoints.size !== 2 || this.state !== 'idle') return
+    event.preventDefault(); this.cancelDemo()
+    const entries = [...this.touchPoints.entries()]
+    this.effectTouchIds = new Set(entries.map(([id]) => id))
+    const [a, b] = entries.map(([, point]) => point)
+    this.startDistance = this.previousDistance = Math.hypot(a.x - b.x, a.y - b.y)
+    this.prevTime = performance.now(); this.releaseAt = 0; this.readySoundPlayed = false
     this.setFold(0); this.setState('folding'); void this.audio.press()
+    this.hint.classList.add('is-discovered')
   }
 
   onMove = (event: PointerEvent) => {
-    if (event.pointerId !== this.pointerId) return
+    if (event.pointerType !== 'touch' || !this.touchPoints.has(event.pointerId)) return
+    this.touchPoints.set(event.pointerId, { x: event.clientX, y: event.clientY })
+    if (!this.effectTouchIds.has(event.pointerId) || this.state !== 'folding' && this.state !== 'ready') return
     event.preventDefault(); const now = performance.now(); const width = Math.max(320, innerWidth)
-    const fold = Math.min(1, Math.abs(event.clientX - this.startX) / (width * .42))
-    const speed = Math.abs(event.clientX - this.prevX) / Math.max(.008, (now - this.prevTime) / 1000)
-    this.setFold(fold); this.audio.drag(fold, speed); this.prevX = event.clientX; this.prevTime = now
+    const points = [...this.effectTouchIds].map((id) => this.touchPoints.get(id)).filter((point): point is { x: number, y: number } => Boolean(point))
+    if (points.length !== 2) return
+    const distance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y)
+    const fold = Math.min(1, Math.max(0, (this.startDistance - distance) / (width * .32)))
+    const speed = Math.abs(distance - this.previousDistance) / Math.max(.008, (now - this.prevTime) / 1000)
+    this.setFold(fold); this.audio.drag(fold, speed); this.previousDistance = distance; this.prevTime = now
     const ready = fold >= .72
     this.setState(ready ? 'ready' : 'folding')
     if (ready && !this.readySoundPlayed) { this.readySoundPlayed = true; void this.audio.ready() }
   }
 
   onUp = (event: PointerEvent) => {
-    if (event.pointerId !== this.pointerId) return
-    event.preventDefault(); this.pointerId = null; this.releaseAt = performance.now(); this.releaseFold = this.fold; this.setState('release'); void this.audio.release()
+    if (event.pointerType !== 'touch') return
+    const wasEffectTouch = this.effectTouchIds.has(event.pointerId)
+    this.touchPoints.delete(event.pointerId); this.effectTouchIds.delete(event.pointerId)
+    if (!wasEffectTouch || this.state !== 'folding' && this.state !== 'ready') return
+    event.preventDefault(); this.effectTouchIds.clear(); this.releaseAt = performance.now(); this.releaseFold = this.fold; this.setState('release'); void this.audio.release()
   }
 }
 

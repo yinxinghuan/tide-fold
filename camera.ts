@@ -16,11 +16,19 @@ export class Camera {
     target: number[]
     fov: number
     zoomRate: number
+    pointerId: number | null
 
     constructor (canvasElement: HTMLCanvasElement, enabled = true) {
-        canvasElement.addEventListener("mousedown", (event: MouseEvent) => {
+        canvasElement.addEventListener("pointerdown", (event: PointerEvent) => {
             if (!enabled) return
+            if (this.isDragging) {
+                this.isDragging = false
+                this.pointerId = null
+                return
+            }
+            if (event.button !== 0 || !event.isPrimary) return
             this.isDragging = true;
+            this.pointerId = event.pointerId
             this.prevX = event.clientX;
             this.prevY = event.clientY;
         });
@@ -35,9 +43,9 @@ export class Camera {
             this.recalculateView()
         })
 
-        canvasElement.addEventListener("mousemove", (event: MouseEvent) => {
+        canvasElement.addEventListener("pointermove", (event: PointerEvent) => {
             if (!enabled) return
-            if (this.isDragging) {
+            if (this.isDragging && event.pointerId === this.pointerId) {
                 const currentX = event.clientX;
                 const currentY = event.clientY;
                 const deltaX = this.prevX - currentX;
@@ -52,14 +60,20 @@ export class Camera {
             }
         });
         
-        canvasElement.addEventListener("mouseup", () => {
+        const endDrag = (event: PointerEvent) => {
             if (!enabled) return
-            if (this.isDragging) this.isDragging = false;
-        });
+            if (event.pointerId === this.pointerId) {
+                this.isDragging = false
+                this.pointerId = null
+            }
+        }
+        canvasElement.addEventListener("pointerup", endDrag)
+        canvasElement.addEventListener("pointercancel", endDrag)
     }
 
     reset(canvasElement: HTMLCanvasElement, initDistance: number, target: number[], fov: number, zoomRate: number) {
         this.isDragging = false
+        this.pointerId = null
         this.prevX = 0
         this.prevY = 0
         this.currentXtheta = Math.PI / 4 * 1

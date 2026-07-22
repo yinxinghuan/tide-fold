@@ -153,7 +153,7 @@ async function main() {
 
 	console.log("simulator initialization done")
 
-		const camera = new Camera(canvasElement, baseline);
+		const camera = new Camera(canvasElement, true);
 
 	// ボタン押下の監視
 	let numberButtonForm = document.getElementById('number-button') as HTMLFormElement;
