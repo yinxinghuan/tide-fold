@@ -38,9 +38,9 @@ Tide Fold 是一款 6–12 秒完成一轮的 WebGPU 感官玩具：玩家左右
 ## 6. Sound Effects
 
 - 首次真实按下：100 Hz 正弦波，70 ms，音量峰值 0.035，快速淡出。
-- 折叠过程：由拖动速度驱动的 80–180 Hz 带通噪声，最高音量 0.045，同一时间只保留一个声部。
+- 折叠过程：由拖动速度驱动的 80–180 Hz 正弦声部，最高音量 0.044，同一时间只保留一个持续声部。
 - 超过 0.72：260 Hz 三角波，90 ms，音量 0.025，提示临界点。
-- 松手反冲：90→46 Hz 正弦下滑叠加 420→180 Hz 低通噪声，420 ms，音量峰值 0.07。
+- 松手反冲：90→46 Hz 正弦下滑，420 ms，音量峰值 0.07。
 - 仅在真实用户输入后创建或恢复 AudioContext；幽灵演示静音，音频失败不阻塞视觉。
 
 ## Interface brief
@@ -50,4 +50,3 @@ Tide Fold 是一款 6–12 秒完成一轮的 WebGPU 感官玩具：玩家左右
 - 状态：loading、guide、idle、folding/ready、release/recovery、WebGPU error/device lost；无菜单与结果页。
 - 安全区：顶部 `max(20px, env(safe-area-inset-top))`，底部 `max(24px, env(safe-area-inset-bottom))`；HUD 不经过画布中央 60% 的手势带。
 - 双语：根据 `game_locale` 或浏览器语言选择 zh/en；提示限制为 4 个英文词或 8 个中文字。
-
